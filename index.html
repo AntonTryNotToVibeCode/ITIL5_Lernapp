@@ -1,1 +1,591 @@
-<!doctype html><html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>ITIL5 Lernapp</title><style>:root{font-family:Inter,system-ui,Arial,sans-serif;color:#172033;background:#eef3ff}*{box-sizing:border-box}body{margin:0;min-height:100vh;background:linear-gradient(135deg,#eaf0ff,#f8fbff)}main{max-width:980px;margin:0 auto;padding:28px}.hero,.card{background:white;border:1px solid #d9e2f5;border-radius:24px;padding:24px;box-shadow:0 16px 45px rgba(33,50,94,.10);margin-bottom:18px}h1{margin:0 0 8px;font-size:2rem}.muted{color:#63708a}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px}.pill{display:inline-flex;gap:8px;align-items:center;background:#f1f5ff;border:1px solid #d9e2f5;border-radius:999px;padding:9px 12px;font-weight:650}.row{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px}button{border:0;border-radius:14px;padding:11px 16px;font-weight:800;cursor:pointer;background:#3157d5;color:white}button.secondary{background:white;color:#172033;border:1px solid #cdd8ef}.answers{display:grid;gap:10px;margin:18px 0}.answer{border:1px solid #cdd8ef;border-radius:16px;padding:14px;background:#fbfcff;cursor:pointer;text-align:left}.answer.selected{border-color:#3157d5;background:#eef3ff}.answer.correct{border-color:#1d9a62;background:#eaf8f1}.answer.wrong{border-color:#d44747;background:#fff0f0}.question{font-size:1.25rem;line-height:1.45;font-weight:760}.progress{height:12px;background:#e4ebf9;border-radius:999px;overflow:hidden;margin-top:16px}.bar{height:100%;background:#3157d5;width:0}.hidden{display:none}.explain{border-left:4px solid #3157d5;background:#f4f7ff;padding:12px;border-radius:12px;color:#3a4862}.small{font-size:.9rem}</style></head><body><main><section class="hero"><h1>ITIL5 Lernapp</h1><p class="muted">Multiple-Choice Training fuer die ITIL Foundation Version 5 Zertifizierung.</p><div class="grid"><span class="pill">Fragen: <strong id="total">0</strong></span><span class="pill">Aktuell: <strong id="current">0</strong></span><span class="pill">Score: <strong id="score">0</strong></span><span class="pill">Modus: <strong id="modeLabel">Lernen</strong></span></div><div class="row"><button id="learnBtn">Lernmodus starten</button><button id="examBtn" class="secondary">Pruefungsmodus starten</button><button id="resetBtn" class="secondary">Neu mischen</button></div><div class="progress"><div id="bar" class="bar"></div></div></section><section class="card"><div class="small muted" id="topic"></div><div class="question" id="question">Starte einen Modus.</div><div id="answers" class="answers"></div><div id="feedback" class="explain hidden"></div><div class="row"><button id="checkBtn" class="hidden">Antwort pruefen</button><button id="nextBtn" class="hidden secondary">Naechste Frage</button></div></section></main><script>const QUESTIONS=[{t:'Service concepts',q:'Ein Mitarbeiter bekommt Nutzungsrechte fuer eine interne Filesharing-Plattform. Welches Konzept passt am besten?',a:['Warranty','Goods','Utility','Access to resources'],c:3,e:'Access to resources bedeutet, dass Konsumenten Provider-Ressourcen unter vereinbarten Bedingungen nutzen.'},{t:'Service concepts',q:'Ein Support Engineer hilft einem User bei der Laptop-Konfiguration. Was ist das?',a:['Transfer of goods','Service action','Sustainability','Access to resources'],c:1,e:'Die Unterstuetzung ist eine Service action, also eine Handlung des Providers.'},{t:'Value',q:'Wann wird ein Service vom Konsumenten als wertvoll wahrgenommen?',a:['Wenn Providerkosten minimal sind','Wenn viele Provider beteiligt sind','Wenn positive Effekte negative Effekte ueberwiegen','Wenn viel in Ressourcen investiert wird'],c:2,e:'Value ist subjektiv und entsteht durch Nutzen, Outcomes sowie optimierte Kosten und Risiken.'},{t:'Sustainability',q:'Recycling, reduzierte Emissionen und transparente Lieferketten stehen vor allem fuer welches Konzept?',a:['Utility','Warranty','User experience','Sustainability'],c:3,e:'Sustainability umfasst Umwelt, soziale Verantwortung und wirtschaftliche Nachhaltigkeit.'},{t:'Four dimensions',q:'Welche Dimension betrifft Rollen, Kultur, Kompetenzen und Kommunikation?',a:['Partners and suppliers','Value streams and processes','Information and technology','Organizations and people'],c:3,e:'Organizations and people betrachtet Struktur, Kultur, Skills und Verantwortlichkeiten.'},{t:'Four dimensions',q:'Welche Dimension behandelt Workflows und Aktivitaeten ueber Organisationsgrenzen hinweg?',a:['Partners and suppliers','Information and technology','Organizations and people','Value streams and processes'],c:3,e:'Value streams and processes zeigt, wie Arbeit organisiert wird, um Wert zu erzeugen.'},{t:'Guiding principles',q:'Was sagt Focus on value im Kern?',a:['Alles auf Wert fuer Organisation, Kunden und Stakeholder ausrichten','Nur Umsatz steigern','Nur Mitarbeiterzufriedenheit messen','Marktanteile maximieren'],c:0,e:'Alle Aktivitaeten sollten direkt oder indirekt auf Value einzahlen.'},{t:'Guiding principles',q:'Warum ist Start where you are wichtig?',a:['Damit man nie automatisiert','Damit man immer neu startet','Damit vorhandene Faehigkeiten und Ressourcen nicht verschwendet werden','Damit Feedback vermieden wird'],c:2,e:'Bestehendes soll bewertet und genutzt werden, bevor man neu baut.'},{t:'Guiding principles',q:'Was ist bei Optimize and automate die richtige Reihenfolge?',a:['Erst automatisieren, dann optimieren','Erst optimieren, dann automatisieren','Alles sofort automatisieren','Menschen komplett ersetzen'],c:1,e:'Ineffiziente Prozesse zu automatisieren vergroessert oft nur das Problem.'},{t:'Governance',q:'Welche Governance-Aktivitaet prueft, ob Leistung und Verhalten zur Strategie und zu Policies passen?',a:['Evaluate','Direct','Monitor','Discover'],c:2,e:'Monitor ueberwacht Performance und Compliance mit strategischer Richtung.'},{t:'Lifecycle',q:'Welche Aktivitaet richtet Produktfaehigkeiten an Konsumentenbedarfen und Strategie aus?',a:['Discover','Build','Operate','Support'],c:0,e:'Discover identifiziert und priorisiert Bedarfe, Chancen und strategischen Fit.'},{t:'Lifecycle',q:'Welche Aktivitaet erstellt Prototypen und Spezifikationen?',a:['Design','Deliver','Support','Transition'],c:0,e:'Design konkretisiert Funktionalitaet, UX und Anforderungen.'},{t:'Lifecycle',q:'Welche Aktivitaet beschafft und alloziert benoetigte Ressourcen?',a:['Support','Acquire','Deliver','Design'],c:1,e:'Acquire stellt Ressourcen und Supplier-Leistungen bereit.'},{t:'Lifecycle',q:'Welche Aktivitaet bringt neue oder geaenderte Produkte in die Live-Umgebung?',a:['Build','Transition','Deliver','Operate'],c:1,e:'Transition sorgt fuer den reibungslosen Uebergang in den Betrieb.'},{t:'Lifecycle',q:'Welche Aktivitaet ueberwacht und erhaelt digitale Produkte und unterstuetzende Systeme?',a:['Deliver','Support','Operate','Transition'],c:2,e:'Operate fokussiert Monitoring, Betrieb und Zuverlaessigkeit.'},{t:'Lifecycle',q:'Welche Aktivitaet hilft Usern und minimiert Auswirkungen von Incidents?',a:['Transition','Operate','Support','Design'],c:2,e:'Support identifiziert und loest Incidents und unterstuetzt Recovery.'},{t:'Concepts',q:'Was ist ein Incident?',a:['Eine relevante Zustandsaenderung','Ungeplante Unterbrechung oder Qualitaetsminderung eines Service','Ursache eines oder mehrerer Incidents','Ein Fehler oder eine Schwachstelle'],c:1,e:'Ein Incident ist eine ungeplante Service-Unterbrechung oder Qualitaetsreduzierung.'},{t:'Concepts',q:'Was ist ein Problem?',a:['Ungeplante Serviceunterbrechung','Ursache oder potenzielle Ursache eines oder mehrerer Incidents','Standard-Serviceanfrage','Ein besonders kritischer Incident'],c:1,e:'Problem Management sucht Ursachen, nicht nur Symptome.'},{t:'Value streams',q:'Was ist der Hauptzweck von Value Stream Mapping?',a:['Monitoring automatisieren','Verbesserungsmoeglichkeiten erkennen und priorisieren','Externe Stakeholder kontrollieren','SLA-Ziele ersetzen'],c:1,e:'Mapping visualisiert den Wertfluss und macht Verbesserungen sichtbar.'},{t:'DevOps',q:'Wie ergaenzt DevOps ITIL im digitalen Produkt- und Servicemanagement?',a:['ITIL liefert den Rahmen, DevOps praktische Methoden und Techniken','DevOps ersetzt ITIL','DevOps ist nur fuer Coding relevant','DevOps ist Governance ueber ITIL'],c:0,e:'ITIL und DevOps sind komplementaer.'},{t:'AI',q:'Wozu dient das ITIL AI Capability Model vor allem?',a:['AI-Tools als Marktstandard zertifizieren','AI-Einsatzmoeglichkeiten einordnen und Verbesserungsfelder erkennen','Governance-Entscheidungen voll automatisieren','Investitionen nur nach ROI sortieren'],c:1,e:'Das Modell hilft, AI-Funktionen zu klassifizieren, zu kommunizieren und Governance zu unterstuetzen.'},{t:'SLA',q:'Was beschreibt ein Service Level Agreement am besten?',a:['Reiner Lieferantenvertrag mit Strafen','Dokumentierte Vereinbarung zwischen Provider und Kunde zu Services und Service Levels','Informelles Erwartungsgespraech','Internes IT-Dokument ohne Kundensicht'],c:1,e:'Ein SLA dokumentiert Services und vereinbarte Leistungsniveaus.'}];let deck=[],index=0,score=0,selected=null,checked=false,exam=false;const $=id=>document.getElementById(id);const shuffle=a=>[...a].sort(()=>Math.random()-.5);function start(isExam=false){exam=isExam;deck=shuffle(QUESTIONS).slice(0,isExam?Math.min(40,QUESTIONS.length):QUESTIONS.length);index=0;score=0;selected=null;checked=false;$('modeLabel').textContent=isExam?'Pruefung':'Lernen';render()}function render(){const item=deck[index];$('total').textContent=deck.length||QUESTIONS.length;$('current').textContent=deck.length?index+1:0;$('score').textContent=score;$('bar').style.width=deck.length?index/deck.length*100+'%':'0%';$('feedback').classList.add('hidden');$('checkBtn').classList.toggle('hidden',!item);$('nextBtn').classList.add('hidden');if(!item){$('question').textContent='Starte einen Modus.';return}$('topic').textContent=item.t;$('question').textContent=item.q;$('answers').innerHTML='';item.a.forEach((answer,i)=>{const el=document.createElement('button');el.className='answer';el.type='button';el.textContent=String.fromCharCode(65+i)+'. '+answer;el.onclick=()=>{if(checked)return;selected=i;document.querySelectorAll('.answer').forEach(x=>x.classList.remove('selected'));el.classList.add('selected')};$('answers').appendChild(el)})}function check(){if(selected===null)return;const item=deck[index];checked=true;const correct=selected===item.c;if(correct)score++;[...document.querySelectorAll('.answer')].forEach((el,i)=>{if(i===item.c)el.classList.add('correct');if(i===selected&&i!==item.c)el.classList.add('wrong')});$('score').textContent=score;if(!exam){$('feedback').textContent=(correct?'Richtig. ':'Falsch. ')+item.e;$('feedback').classList.remove('hidden')}$('checkBtn').classList.add('hidden');$('nextBtn').classList.remove('hidden')}function next(){index++;selected=null;checked=false;if(index>=deck.length){$('bar').style.width='100%';$('question').textContent=exam?`Pruefung beendet: ${score} von ${deck.length} richtig. ${score>=26?'Bestanden':'Noch nicht bestanden'}.`:`Lernrunde beendet: ${score} von ${deck.length} richtig.`;$('answers').innerHTML='';$('topic').textContent='Ergebnis';$('checkBtn').classList.add('hidden');$('nextBtn').classList.add('hidden');localStorage.setItem('itil5-last-score',JSON.stringify({score,total:deck.length,date:new Date().toISOString()}));return}render()}$('learnBtn').onclick=()=>start(false);$('examBtn').onclick=()=>start(true);$('resetBtn').onclick=()=>start(exam);$('checkBtn').onclick=check;$('nextBtn').onclick=next;$('total').textContent=QUESTIONS.length;</script></body></html>
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>ITIL5 Lernapp</title>
+
+    <style>
+      :root {
+        font-family: Inter, system-ui, Arial, sans-serif;
+        color: #172033;
+        background: #eef3ff;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        background: linear-gradient(135deg, #eaf0ff, #f8fbff);
+      }
+
+      main {
+        max-width: 980px;
+        margin: 0 auto;
+        padding: 28px;
+      }
+
+      .hero,
+      .card {
+        background: #ffffff;
+        border: 1px solid #d9e2f5;
+        border-radius: 24px;
+        padding: 24px;
+        box-shadow: 0 16px 45px rgba(33, 50, 94, 0.1);
+        margin-bottom: 18px;
+      }
+
+      h1 {
+        margin: 0 0 8px;
+        font-size: 2rem;
+      }
+
+      .muted {
+        color: #63708a;
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+        gap: 12px;
+      }
+
+      .pill {
+        display: inline-flex;
+        gap: 8px;
+        align-items: center;
+        background: #f1f5ff;
+        border: 1px solid #d9e2f5;
+        border-radius: 999px;
+        padding: 9px 12px;
+        font-weight: 650;
+      }
+
+      .row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 14px;
+      }
+
+      button {
+        border: 0;
+        border-radius: 14px;
+        padding: 11px 16px;
+        font-weight: 800;
+        cursor: pointer;
+        background: #3157d5;
+        color: #ffffff;
+      }
+
+      button.secondary {
+        background: #ffffff;
+        color: #172033;
+        border: 1px solid #cdd8ef;
+      }
+
+      .answers {
+        display: grid;
+        gap: 10px;
+        margin: 18px 0;
+      }
+
+      .answer {
+        border: 1px solid #cdd8ef;
+        border-radius: 16px;
+        padding: 14px;
+        background: #fbfcff;
+        color: #172033;
+        cursor: pointer;
+        text-align: left;
+      }
+
+      .answer.selected {
+        border-color: #3157d5;
+        background: #eef3ff;
+        color: #172033;
+      }
+
+      .answer.correct {
+        border-color: #1d9a62;
+        background: #eaf8f1;
+        color: #172033;
+      }
+
+      .answer.wrong {
+        border-color: #d44747;
+        background: #fff0f0;
+        color: #172033;
+      }
+
+      .question {
+        font-size: 1.25rem;
+        line-height: 1.45;
+        font-weight: 760;
+      }
+
+      .progress {
+        height: 12px;
+        background: #e4ebf9;
+        border-radius: 999px;
+        overflow: hidden;
+        margin-top: 16px;
+      }
+
+      .bar {
+        height: 100%;
+        background: #3157d5;
+        width: 0;
+      }
+
+      .hidden {
+        display: none;
+      }
+
+      .explain {
+        border-left: 4px solid #3157d5;
+        background: #f4f7ff;
+        padding: 12px;
+        border-radius: 12px;
+        color: #3a4862;
+      }
+
+      .small {
+        font-size: 0.9rem;
+      }
+    </style>
+  </head>
+
+  <body>
+    <main>
+      <section class="hero">
+        <h1>ITIL5 Lernapp</h1>
+        <p class="muted">
+          Multiple-Choice Training fuer die ITIL Foundation Version 5 Zertifizierung.
+        </p>
+
+        <div class="grid">
+          <span class="pill">Fragen: <strong id="total">0</strong></span>
+          <span class="pill">Aktuell: <strong id="current">0</strong></span>
+          <span class="pill">Score: <strong id="score">0</strong></span>
+          <span class="pill">Modus: <strong id="modeLabel">Lernen</strong></span>
+        </div>
+
+        <div class="row">
+          <button id="learnBtn">Lernmodus starten</button>
+          <button id="examBtn" class="secondary">Pruefungsmodus starten</button>
+          <button id="resetBtn" class="secondary">Neu mischen</button>
+        </div>
+
+        <div class="progress">
+          <div id="bar" class="bar"></div>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="small muted" id="topic"></div>
+        <div class="question" id="question">Starte einen Modus.</div>
+        <div id="answers" class="answers"></div>
+        <div id="feedback" class="explain hidden"></div>
+
+        <div class="row">
+          <button id="checkBtn" class="hidden">Antwort pruefen</button>
+          <button id="nextBtn" class="hidden secondary">Naechste Frage</button>
+        </div>
+      </section>
+    </main>
+
+    <script>
+      const QUESTIONS = [
+        {
+          t: 'Service concepts',
+          q: 'Ein Mitarbeiter bekommt Nutzungsrechte fuer eine interne Filesharing-Plattform. Welches Konzept passt am besten?',
+          a: [
+            'Warranty',
+            'Goods',
+            'Utility',
+            'Access to resources',
+          ],
+          c: 3,
+          e: 'Access to resources bedeutet, dass Konsumenten Provider-Ressourcen unter vereinbarten Bedingungen nutzen.',
+        },
+        {
+          t: 'Service concepts',
+          q: 'Ein Support Engineer hilft einem User bei der Laptop-Konfiguration. Was ist das?',
+          a: [
+            'Transfer of goods',
+            'Service action',
+            'Sustainability',
+            'Access to resources',
+          ],
+          c: 1,
+          e: 'Die Unterstuetzung ist eine Service action, also eine Handlung des Providers.',
+        },
+        {
+          t: 'Value',
+          q: 'Wann wird ein Service vom Konsumenten als wertvoll wahrgenommen?',
+          a: [
+            'Wenn Providerkosten minimal sind',
+            'Wenn viele Provider beteiligt sind',
+            'Wenn positive Effekte negative Effekte ueberwiegen',
+            'Wenn viel in Ressourcen investiert wird',
+          ],
+          c: 2,
+          e: 'Value ist subjektiv und entsteht durch Nutzen, Outcomes sowie optimierte Kosten und Risiken.',
+        },
+        {
+          t: 'Sustainability',
+          q: 'Recycling, reduzierte Emissionen und transparente Lieferketten stehen vor allem fuer welches Konzept?',
+          a: [
+            'Utility',
+            'Warranty',
+            'User experience',
+            'Sustainability',
+          ],
+          c: 3,
+          e: 'Sustainability umfasst Umwelt, soziale Verantwortung und wirtschaftliche Nachhaltigkeit.',
+        },
+        {
+          t: 'Four dimensions',
+          q: 'Welche Dimension betrifft Rollen, Kultur, Kompetenzen und Kommunikation?',
+          a: [
+            'Partners and suppliers',
+            'Value streams and processes',
+            'Information and technology',
+            'Organizations and people',
+          ],
+          c: 3,
+          e: 'Organizations and people betrachtet Struktur, Kultur, Skills und Verantwortlichkeiten.',
+        },
+        {
+          t: 'Four dimensions',
+          q: 'Welche Dimension behandelt Workflows und Aktivitaeten ueber Organisationsgrenzen hinweg?',
+          a: [
+            'Partners and suppliers',
+            'Information and technology',
+            'Organizations and people',
+            'Value streams and processes',
+          ],
+          c: 3,
+          e: 'Value streams and processes zeigt, wie Arbeit organisiert wird, um Wert zu erzeugen.',
+        },
+        {
+          t: 'Guiding principles',
+          q: 'Was sagt Focus on value im Kern?',
+          a: [
+            'Alles auf Wert fuer Organisation, Kunden und Stakeholder ausrichten',
+            'Nur Umsatz steigern',
+            'Nur Mitarbeiterzufriedenheit messen',
+            'Marktanteile maximieren',
+          ],
+          c: 0,
+          e: 'Alle Aktivitaeten sollten direkt oder indirekt auf Value einzahlen.',
+        },
+        {
+          t: 'Guiding principles',
+          q: 'Warum ist Start where you are wichtig?',
+          a: [
+            'Damit man nie automatisiert',
+            'Damit man immer neu startet',
+            'Damit vorhandene Faehigkeiten und Ressourcen nicht verschwendet werden',
+            'Damit Feedback vermieden wird',
+          ],
+          c: 2,
+          e: 'Bestehendes soll bewertet und genutzt werden, bevor man neu baut.',
+        },
+        {
+          t: 'Guiding principles',
+          q: 'Was ist bei Optimize and automate die richtige Reihenfolge?',
+          a: [
+            'Erst automatisieren, dann optimieren',
+            'Erst optimieren, dann automatisieren',
+            'Alles sofort automatisieren',
+            'Menschen komplett ersetzen',
+          ],
+          c: 1,
+          e: 'Ineffiziente Prozesse zu automatisieren vergroessert oft nur das Problem.',
+        },
+        {
+          t: 'Governance',
+          q: 'Welche Governance-Aktivitaet prueft, ob Leistung und Verhalten zur Strategie und zu Policies passen?',
+          a: [
+            'Evaluate',
+            'Direct',
+            'Monitor',
+            'Discover',
+          ],
+          c: 2,
+          e: 'Monitor ueberwacht Performance und Compliance mit strategischer Richtung.',
+        },
+        {
+          t: 'Lifecycle',
+          q: 'Welche Aktivitaet richtet Produktfaehigkeiten an Konsumentenbedarfen und Strategie aus?',
+          a: [
+            'Discover',
+            'Build',
+            'Operate',
+            'Support',
+          ],
+          c: 0,
+          e: 'Discover identifiziert und priorisiert Bedarfe, Chancen und strategischen Fit.',
+        },
+        {
+          t: 'Lifecycle',
+          q: 'Welche Aktivitaet erstellt Prototypen und Spezifikationen?',
+          a: [
+            'Design',
+            'Deliver',
+            'Support',
+            'Transition',
+          ],
+          c: 0,
+          e: 'Design konkretisiert Funktionalitaet, UX und Anforderungen.',
+        },
+        {
+          t: 'Lifecycle',
+          q: 'Welche Aktivitaet beschafft und alloziert benoetigte Ressourcen?',
+          a: [
+            'Support',
+            'Acquire',
+            'Deliver',
+            'Design',
+          ],
+          c: 1,
+          e: 'Acquire stellt Ressourcen und Supplier-Leistungen bereit.',
+        },
+        {
+          t: 'Lifecycle',
+          q: 'Welche Aktivitaet bringt neue oder geaenderte Produkte in die Live-Umgebung?',
+          a: [
+            'Build',
+            'Transition',
+            'Deliver',
+            'Operate',
+          ],
+          c: 1,
+          e: 'Transition sorgt fuer den reibungslosen Uebergang in den Betrieb.',
+        },
+        {
+          t: 'Lifecycle',
+          q: 'Welche Aktivitaet ueberwacht und erhaelt digitale Produkte und unterstuetzende Systeme?',
+          a: [
+            'Deliver',
+            'Support',
+            'Operate',
+            'Transition',
+          ],
+          c: 2,
+          e: 'Operate fokussiert Monitoring, Betrieb und Zuverlaessigkeit.',
+        },
+        {
+          t: 'Lifecycle',
+          q: 'Welche Aktivitaet hilft Usern und minimiert Auswirkungen von Incidents?',
+          a: [
+            'Transition',
+            'Operate',
+            'Support',
+            'Design',
+          ],
+          c: 2,
+          e: 'Support identifiziert und loest Incidents und unterstuetzt Recovery.',
+        },
+        {
+          t: 'Concepts',
+          q: 'Was ist ein Incident?',
+          a: [
+            'Eine relevante Zustandsaenderung',
+            'Ungeplante Unterbrechung oder Qualitaetsminderung eines Service',
+            'Ursache eines oder mehrerer Incidents',
+            'Ein Fehler oder eine Schwachstelle',
+          ],
+          c: 1,
+          e: 'Ein Incident ist eine ungeplante Service-Unterbrechung oder Qualitaetsreduzierung.',
+        },
+        {
+          t: 'Concepts',
+          q: 'Was ist ein Problem?',
+          a: [
+            'Ungeplante Serviceunterbrechung',
+            'Ursache oder potenzielle Ursache eines oder mehrerer Incidents',
+            'Standard-Serviceanfrage',
+            'Ein besonders kritischer Incident',
+          ],
+          c: 1,
+          e: 'Problem Management sucht Ursachen, nicht nur Symptome.',
+        },
+        {
+          t: 'Value streams',
+          q: 'Was ist der Hauptzweck von Value Stream Mapping?',
+          a: [
+            'Monitoring automatisieren',
+            'Verbesserungsmoeglichkeiten erkennen und priorisieren',
+            'Externe Stakeholder kontrollieren',
+            'SLA-Ziele ersetzen',
+          ],
+          c: 1,
+          e: 'Mapping visualisiert den Wertfluss und macht Verbesserungen sichtbar.',
+        },
+        {
+          t: 'DevOps',
+          q: 'Wie ergaenzt DevOps ITIL im digitalen Produkt- und Servicemanagement?',
+          a: [
+            'ITIL liefert den Rahmen, DevOps praktische Methoden und Techniken',
+            'DevOps ersetzt ITIL',
+            'DevOps ist nur fuer Coding relevant',
+            'DevOps ist Governance ueber ITIL',
+          ],
+          c: 0,
+          e: 'ITIL und DevOps sind komplementaer.',
+        },
+        {
+          t: 'AI',
+          q: 'Wozu dient das ITIL AI Capability Model vor allem?',
+          a: [
+            'AI-Tools als Marktstandard zertifizieren',
+            'AI-Einsatzmoeglichkeiten einordnen und Verbesserungsfelder erkennen',
+            'Governance-Entscheidungen voll automatisieren',
+            'Investitionen nur nach ROI sortieren',
+          ],
+          c: 1,
+          e: 'Das Modell hilft, AI-Funktionen zu klassifizieren, zu kommunizieren und Governance zu unterstuetzen.',
+        },
+        {
+          t: 'SLA',
+          q: 'Was beschreibt ein Service Level Agreement am besten?',
+          a: [
+            'Reiner Lieferantenvertrag mit Strafen',
+            'Dokumentierte Vereinbarung zwischen Provider und Kunde zu Services und Service Levels',
+            'Informelles Erwartungsgespraech',
+            'Internes IT-Dokument ohne Kundensicht',
+          ],
+          c: 1,
+          e: 'Ein SLA dokumentiert Services und vereinbarte Leistungsniveaus.',
+        },
+      ];
+
+      let deck = [];
+      let index = 0;
+      let score = 0;
+      let selected = null;
+      let checked = false;
+      let exam = false;
+
+      const getElement = (id) => document.getElementById(id);
+      const shuffle = (array) => [...array].sort(() => Math.random() - 0.5);
+
+      function start(isExam = false) {
+        exam = isExam;
+        deck = shuffle(QUESTIONS).slice(0, isExam ? Math.min(40, QUESTIONS.length) : QUESTIONS.length);
+        index = 0;
+        score = 0;
+        selected = null;
+        checked = false;
+        getElement('modeLabel').textContent = isExam ? 'Pruefung' : 'Lernen';
+        render();
+      }
+
+      function render() {
+        const item = deck[index];
+
+        getElement('total').textContent = deck.length || QUESTIONS.length;
+        getElement('current').textContent = deck.length ? index + 1 : 0;
+        getElement('score').textContent = score;
+        getElement('bar').style.width = deck.length ? `${(index / deck.length) * 100}%` : '0%';
+        getElement('feedback').classList.add('hidden');
+        getElement('checkBtn').classList.toggle('hidden', !item);
+        getElement('nextBtn').classList.add('hidden');
+
+        if (!item) {
+          getElement('question').textContent = 'Starte einen Modus.';
+          return;
+        }
+
+        getElement('topic').textContent = item.t;
+        getElement('question').textContent = item.q;
+        getElement('answers').innerHTML = '';
+
+        item.a.forEach((answer, answerIndex) => {
+          const answerButton = document.createElement('button');
+          answerButton.className = 'answer';
+          answerButton.type = 'button';
+          answerButton.textContent = `${String.fromCharCode(65 + answerIndex)}. ${answer}`;
+
+          answerButton.onclick = () => {
+            if (checked) return;
+
+            selected = answerIndex;
+            document.querySelectorAll('.answer').forEach((element) => element.classList.remove('selected'));
+            answerButton.classList.add('selected');
+          };
+
+          getElement('answers').appendChild(answerButton);
+        });
+      }
+
+      function check() {
+        if (selected === null) return;
+
+        const item = deck[index];
+        checked = true;
+        const correct = selected === item.c;
+
+        if (correct) score += 1;
+
+        [...document.querySelectorAll('.answer')].forEach((element, answerIndex) => {
+          if (answerIndex === item.c) element.classList.add('correct');
+          if (answerIndex === selected && answerIndex !== item.c) element.classList.add('wrong');
+        });
+
+        getElement('score').textContent = score;
+
+        if (!exam) {
+          getElement('feedback').textContent = `${correct ? 'Richtig.' : 'Falsch.'} ${item.e}`;
+          getElement('feedback').classList.remove('hidden');
+        }
+
+        getElement('checkBtn').classList.add('hidden');
+        getElement('nextBtn').classList.remove('hidden');
+      }
+
+      function next() {
+        index += 1;
+        selected = null;
+        checked = false;
+
+        if (index >= deck.length) {
+          getElement('bar').style.width = '100%';
+          getElement('question').textContent = exam
+            ? `Pruefung beendet: ${score} von ${deck.length} richtig. ${score >= 26 ? 'Bestanden' : 'Noch nicht bestanden'}.`
+            : `Lernrunde beendet: ${score} von ${deck.length} richtig.`;
+          getElement('answers').innerHTML = '';
+          getElement('topic').textContent = 'Ergebnis';
+          getElement('checkBtn').classList.add('hidden');
+          getElement('nextBtn').classList.add('hidden');
+
+          localStorage.setItem(
+            'itil5-last-score',
+            JSON.stringify({
+              score,
+              total: deck.length,
+              date: new Date().toISOString(),
+            }),
+          );
+
+          return;
+        }
+
+        render();
+      }
+
+      getElement('learnBtn').onclick = () => start(false);
+      getElement('examBtn').onclick = () => start(true);
+      getElement('resetBtn').onclick = () => start(exam);
+      getElement('checkBtn').onclick = check;
+      getElement('nextBtn').onclick = next;
+      getElement('total').textContent = QUESTIONS.length;
+    </script>
+  </body>
+</html>
