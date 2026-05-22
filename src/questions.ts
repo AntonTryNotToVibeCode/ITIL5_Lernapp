@@ -1,6 +1,7 @@
 import type { Question } from './types';
+import { SAMPLE_PAPER_QUESTIONS } from './sample-paper-questions';
 
-export const QUESTIONS: Question[] = [
+const CORE_QUESTIONS: Question[] = [
   {
     topic: 'Service concepts',
     prompt:
@@ -666,3 +667,5 @@ export const QUESTIONS: Question[] = [
       'An operating model represents how an organization co-creates value with stakeholders and how it operates internally.',
   },
 ];
+
+export const QUESTIONS: Question[] = [...CORE_QUESTIONS, ...SAMPLE_PAPER_QUESTIONS];
