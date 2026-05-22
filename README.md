@@ -24,4 +24,4 @@ Dann oeffnen: http://localhost:5173
 npm run build
 ```
 
-Hinweis: Die Fragen sind uebungsorientierte Lernfragen auf Basis der bereitgestellten Sample-Paper-Themen und keine vollstaendige 1:1-Kopie der PDFs.
+
