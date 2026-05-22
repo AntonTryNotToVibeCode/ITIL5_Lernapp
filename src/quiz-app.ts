@@ -7,6 +7,8 @@ type QuizElements = {
   total: HTMLElement;
   current: HTMLElement;
   score: HTMLElement;
+  correct: HTMLElement;
+  wrong: HTMLElement;
   modeLabel: HTMLElement;
   topic: HTMLElement;
   question: HTMLElement;
@@ -24,6 +26,7 @@ type QuizState = {
   deck: Question[];
   index: number;
   score: number;
+  wrongAnswers: number;
   selectedAnswerIndex: number | null;
   isChecked: boolean;
   mode: QuizMode;
@@ -37,6 +40,7 @@ export class QuizApp {
     deck: [],
     index: 0,
     score: 0,
+    wrongAnswers: 0,
     selectedAnswerIndex: null,
     isChecked: false,
     mode: 'learn',
@@ -60,6 +64,7 @@ export class QuizApp {
       deck: shuffle(QUESTIONS).slice(0, questionLimit),
       index: 0,
       score: 0,
+      wrongAnswers: 0,
       selectedAnswerIndex: null,
       isChecked: false,
       mode,
@@ -75,6 +80,7 @@ export class QuizApp {
     this.elements.total.textContent = String(this.state.deck.length || QUESTIONS.length);
     this.elements.current.textContent = String(this.state.deck.length ? this.state.index + 1 : 0);
     this.elements.score.textContent = String(this.state.score);
+    this.updateAnswerStats();
     this.elements.bar.style.width = this.getProgressWidth();
     this.elements.feedback.classList.add('hidden');
     this.elements.checkButton.classList.toggle('hidden', question === undefined);
@@ -134,10 +140,12 @@ export class QuizApp {
 
     if (isCorrect) {
       this.state.score += 1;
+    } else {
+      this.state.wrongAnswers += 1;
     }
 
     this.renderAnswerResult(question);
-    this.elements.score.textContent = String(this.state.score);
+    this.updateAnswerStats();
 
     if (this.state.mode === 'learn') {
       this.elements.feedback.textContent = `${isCorrect ? 'Richtig.' : 'Falsch.'} ${question.explanation}`;
@@ -191,6 +199,12 @@ export class QuizApp {
       total: this.state.deck.length,
       date: new Date().toISOString(),
     });
+  }
+
+  private updateAnswerStats(): void {
+    this.elements.score.textContent = String(this.state.score);
+    this.elements.correct.textContent = String(this.state.score);
+    this.elements.wrong.textContent = String(this.state.wrongAnswers);
   }
 
   private getResultText(): string {
