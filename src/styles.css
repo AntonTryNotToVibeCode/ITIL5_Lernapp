@@ -56,6 +56,16 @@ h1 {
   font-weight: 650;
 }
 
+.pill.success {
+  background: #eaf8f1;
+  border-color: #bfe8d2;
+}
+
+.pill.danger {
+  background: #fff0f0;
+  border-color: #f2c4c4;
+}
+
 .row {
   display: flex;
   flex-wrap: wrap;

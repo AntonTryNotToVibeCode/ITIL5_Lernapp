@@ -15,6 +15,8 @@ createQuizApp({
   total: getElement('total', HTMLElement),
   current: getElement('current', HTMLElement),
   score: getElement('score', HTMLElement),
+  correct: getElement('correct', HTMLElement),
+  wrong: getElement('wrong', HTMLElement),
   modeLabel: getElement('modeLabel', HTMLElement),
   topic: getElement('topic', HTMLElement),
   question: getElement('question', HTMLElement),
